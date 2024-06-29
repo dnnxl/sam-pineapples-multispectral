@@ -89,6 +89,8 @@ def get_parameters():
     parser.add_argument('--ood-validation-samples', type=int, default=10)
     parser.add_argument('--mahalanobis-lambda', type=float, default=-1.0)
 
+    # Multispectral bands 
+    parser.add_argument('--bands', type=str, default="RGB")
 
     return parser.parse_args()
 
@@ -233,7 +235,7 @@ def create_datasets_and_loaders(args):
     :loaders
     """
     datasets = create_dataset_ood(
-        args.dataset, args.root, 
+        args.dataset, args.root, bands=args.bands.split(","),
         seed=args.seed,
         labeled_samples=args.ood_labeled_samples,
         unlabeled_samples=args.ood_unlabeled_samples,
@@ -244,16 +246,22 @@ def create_datasets_and_loaders(args):
     dataset_unlabel = datasets[2]
     dataset_full_label = datasets[3]
     dataset_validation = datasets[4]
+    
+    #for idx in range(len(dataset_label)):
+    #    image, label, additional_info = dataset_label[idx]
+    #    print("Image:", image)
+    #    print("Label:", label)
+    #    print("Additional Info:", additional_info)
 
     # create data loaders
-    trans_numpy = transforms_toNumpy()
+    #trans_numpy = transforms_toNumpy()
     normalize_imgs = False
     loader_label = create_loader(
         dataset_label,
         img_resolution=args.img_resolution,
         batch_size=args.batch_size_labeled,
         is_training=False,
-        transform_fn = trans_numpy,
+        #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
     loader_test = create_loader(
@@ -261,7 +269,7 @@ def create_datasets_and_loaders(args):
         img_resolution=args.img_resolution,
         batch_size=args.batch_size_unlabeled,
         is_training=False,
-        transform_fn = trans_numpy,
+        #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
     loader_unlabel = create_loader(
@@ -269,7 +277,7 @@ def create_datasets_and_loaders(args):
         img_resolution=args.img_resolution,
         batch_size=args.batch_size_unlabeled,
         is_training=False,
-        transform_fn = trans_numpy,
+        #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
     loader_full_label = create_loader(
@@ -277,7 +285,7 @@ def create_datasets_and_loaders(args):
         img_resolution=args.img_resolution,
         batch_size=args.batch_size_unlabeled,
         is_training=False,
-        transform_fn = trans_numpy,
+        #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
     loader_validation = create_loader(
@@ -285,8 +293,12 @@ def create_datasets_and_loaders(args):
         img_resolution=args.img_resolution,
         batch_size=args.batch_size_validation,
         is_training=False,
-        transform_fn = trans_numpy,
+        #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
+    #for images, labels, additional_info in loader_label:
+        # Your training or evaluation code here
+    #    print("Images:", images)
+    #    print("Labels:", labels)
+    #    print("Additional Info:", additional_info)
     return loader_label, loader_test, loader_unlabel, loader_full_label, loader_validation
-    

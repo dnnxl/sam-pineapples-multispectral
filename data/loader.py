@@ -37,12 +37,15 @@ class DetectionFastCollate:
         target = dict()
         labeler_outputs = dict()
         img_tensor = torch.zeros((batch_size, *batch[0][0].shape), dtype=torch.uint8)
+        img_multispectral_tensor = torch.zeros((batch_size, *batch[0][2].shape), dtype=torch.float32)
 
         for i in range(batch_size):
             if type(batch[i][0]).__module__ == np.__name__:
                 img_tensor[i] += torch.from_numpy(batch[i][0])
+                img_multispectral_tensor[i] += torch.from_numpy(batch[i][2])
             else:
                 img_tensor[i] += batch[i][0]
+                img_multispectral_tensor[i] += batch[i][2]
 
             labeler_inputs = {}
             for tk, tv in batch[i][1].items():
@@ -108,7 +111,7 @@ class DetectionFastCollate:
         if labeler_outputs:
             target.update(labeler_outputs)
 
-        return img_tensor, target
+        return img_tensor, target, img_multispectral_tensor
 
 
 class PrefetchLoader:
@@ -135,14 +138,14 @@ class PrefetchLoader:
         # stream = torch.cuda.Stream()
         first = True
 
-        for next_input, next_target in self.loader:
+        for next_input, next_target, next_input_multispectral in self.loader:
             # with torch.cuda.stream(stream):
             # next_input = next_input.cuda(non_blocking=True)
             if self.normalize:
                 next_input = next_input.float().sub_(self.mean).div_(self.std)
             # next_target = {k: v.cuda(non_blocking=True) for k, v in next_target.items()}
             if self.random_erasing is not None:
-                next_input = self.random_erasing(next_input, next_target)
+                next_input = self.random_erasing(next_input, next_target, next_input_multispectral)
 
             if not first:
                 yield input, target
@@ -152,8 +155,9 @@ class PrefetchLoader:
             # torch.cuda.current_stream().wait_stream(stream)
             input = next_input
             target = next_target
+            multispectral = next_input_multispectral
 
-        yield input, target
+        yield input, target, multispectral
 
     def __len__(self):
         return len(self.loader)

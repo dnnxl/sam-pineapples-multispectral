@@ -6,6 +6,8 @@ import numpy as np
 import cv2
 from metrics import intersection_over_union, intersection
 import random
+import torchvision.transforms as transforms
+
 
 def get_batch_prototypes(
     dataloader_fewshot, 
@@ -30,6 +32,10 @@ def get_batch_prototypes(
         # every batch is a tuple: (torch.imgs , metadata_and_bboxes)
         # ITERATE: IMAGE
         for idx in list(range(batch[1]['img_idx'].numel())):
+            #print("---: ", batch[0][idx].shape)
+            #print("---: ", batch[1][idx])
+            print("---: ", batch[2][idx])
+
             # get background samples
             if get_background_samples:
                 ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
@@ -59,6 +65,8 @@ def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
     labels = []
     # batch[0] has the images    
     image = batch[0][idx].cpu().numpy().transpose(1,2,0)
+    img_multispectral = batch[2][idx]#.cpu()#.numpy().transpose(1,2,0)
+    #print("// Img cv2 size: ", img_multispectral.size)
     img_pil = Image.fromarray(image)
 
     # batch[1] has the metadata and bboxes
@@ -76,11 +84,20 @@ def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
         bbox = bbox.numpy()
 
         # get img
-        crop = img_pil.crop(bbox)
+        #crop = img_pil.crop(bbox) # PIL image
+        # Crop image from pytorch tensor
+        #print("bbox--------------", bbox)
+        #print("/////////////////////////", bbox[0])
+        x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+        crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
+        print("----- crop size: ", crop.size)
+
         if use_sam_embeddings:
-            new_sample = transform_norm.preprocess_sam_embed(crop)
+            new_sample = transform_norm.preprocess_torch_multispectral(crop)
         else:
-            new_sample = transform_norm.preprocess_timm_embed(crop)
+            #new_sample = transform_norm.preprocess_timm_embed(crop)
+            new_sample = transform_norm.preprocess_torch_multispectral(crop)
+            print("----- new_sample size: ", new_sample.size)
         labels.append(classes[idx_bbox].item())
         imgs.append(new_sample)
     return imgs, labels
@@ -180,16 +197,19 @@ def get_background(
             coords = [coords[i] for i in indices]
             labels_temp = [labels_temp[i] for i in indices]
 
-        # 4. GET images as tensors
+        # 4. GET images as tensors, crop the images
         labels += labels_temp
         image = batch[0][idx].cpu().numpy().transpose(1,2,0)
+        
         img_pil = Image.fromarray(image)
         for (x1,y1,x2,y2) in coords:
             crop = img_pil.crop([x1,y1,x2,y2])  
             if use_sam_embeddings:
                 new_sample = transform_norm.preprocess_sam_embed(crop)
+            #else:
+            #    new_sample = transform_norm.preprocess_timm_embed(crop)
             else:
-                new_sample = transform_norm.preprocess_timm_embed(crop)
+                new_sample = transform_norm.preprocess_cv2_embed(crop)
             imgs.append(new_sample)
     return imgs, labels
 

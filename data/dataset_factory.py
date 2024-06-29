@@ -40,7 +40,7 @@ def create_dataset(name, root, splits=('train', 'val'), bands_to_apply=["RGB"]):
             datasets[s] = dataset_cls(
                 data_dir=root / Path(split_cfg['img_dir']),
                 parser=create_parser(dataset_cfg.parser, cfg=parser_cfg),
-                bands_to_apply=bands_to_apply
+                    bands_to_apply=bands_to_apply
             )
     else:
         assert False, f'Unknown dataset parser ({name})'
@@ -50,7 +50,7 @@ def create_dataset(name, root, splits=('train', 'val'), bands_to_apply=["RGB"]):
 
 
 def create_dataset_ood(name, root, splits=('train'), 
-    seed=None, labeled_samples=1, unlabeled_samples=5, validation_samples=1):
+    seed=None, labeled_samples=1, unlabeled_samples=5, validation_samples=1, bands=["RGB"]):
     """
     This method splits the ds, format appropriate for the loader.
 
@@ -183,7 +183,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     json_dict=new_labeled,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[f'{s}_labeled'] = dataset_cls(
+                datasets[f'{s}_labeled'] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg_labeled),
                 )
@@ -194,7 +194,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     json_dict=new_test,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[f'{s}_test'] = dataset_cls(
+                datasets[f'{s}_test'] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg_test),
                 )
@@ -205,7 +205,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     json_dict=new_unlabeled,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[f'{s}_unlabeled'] = dataset_cls(
+                datasets[f'{s}_unlabeled'] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg_unlabeled),
                 )
@@ -216,7 +216,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     json_dict=new_full_labeled,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[f'{s}_full_labeled'] = dataset_cls(
+                datasets[f'{s}_full_labeled'] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg_full_labeled),
                 )
@@ -227,7 +227,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     json_dict=new_validation,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[f'{s}_validation'] = dataset_cls(
+                datasets[f'{s}_validation'] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg_validation),
                 )
@@ -238,7 +238,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     ann_filename=ann_file,
                     has_labels=split_cfg['has_labels']
                 )
-                datasets[s] = dataset_cls(
+                datasets[s] = dataset_cls(bands=bands,
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg),
                 )
@@ -274,7 +274,7 @@ def create_dataset_ood(name, root, splits=('train'),
                     img_filename=os.path.join(split_cfg['img_dir'], dataset_cfg.img_filename),
                 )
                 parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
-            datasets[s] = dataset_cls(data_dir=root, parser=parser)
+            datasets[s] = dataset_cls(bands=bands, data_dir=root, parser=parser)
     elif name.startswith('openimages'):
         if 'challenge2019' in name:
             dataset_cfg = OpenImagesObjChallenge2019Cfg()
@@ -293,7 +293,7 @@ def create_dataset_ood(name, root, splits=('train'),
                 prefix_levels=split_cfg['prefix_levels'],
                 has_labels=split_cfg['has_labels'],
             )
-            datasets[s] = dataset_cls(
+            datasets[s] = dataset_cls(bands=bands,
                 data_dir=root / Path(split_cfg['img_dir']),
                 parser=create_parser(dataset_cfg.parser, cfg=parser_cfg)
             )

@@ -79,7 +79,7 @@ class RandomErasing:
                         dtype=dtype, device=self.device)
                     break
 
-    def __call__(self, input, target):
+    def __call__(self, input, target, multispectral):
         batch_size, chan, input_h, input_w = input.shape
         img_scales = target['img_scale']
         img_size = (target['img_size'] / img_scales.unsqueeze(1)).int()

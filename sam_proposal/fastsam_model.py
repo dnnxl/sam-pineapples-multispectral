@@ -84,11 +84,16 @@ class FASTSAM:
             xywh = torchvision.ops.box_convert(
                     torch.tensor(xyxy), in_fmt='xyxy', out_fmt='xywh')
             
-            crop = img_pil.crop(xyxy)  
+            img_multispectral = batch[2][idx]#.numpy()
+            x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+            crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
+
+            #crop = img_pil.crop(xyxy)  
             if use_sam_embeddings:
                 sample = transform.preprocess_sam_embed(crop)
             else:
-                sample = transform.preprocess_timm_embed(crop)
+                #sample = transform.preprocess_timm_embed(crop)
+                sample = transform.preprocess_torch_multispectral(crop)
 
             # accumulate
             imgs.append(sample)

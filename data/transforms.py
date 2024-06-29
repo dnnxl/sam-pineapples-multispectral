@@ -6,8 +6,11 @@ import math
 from copy import deepcopy
 
 from PIL import Image
+import cv2
 import numpy as np
 import torch
+import kornia as K
+import torchvision.transforms as transforms
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
@@ -332,14 +335,25 @@ class Transform_To_Models():
     def __init__(self, 
         size:int = 32, 
         force_resize:bool = False, 
-        keep_aspect_ratio:bool = False) -> None:
+        mean = None, std=None) -> None:
         """ Normalization method, also, resize img if necessary.
         """
         self.mean = 255 * torch.tensor([0.485, 0.456, 0.406])
         self.std = 255 * torch.tensor([0.229, 0.224, 0.225])
         self.size = size
         self.force_resize = force_resize
-        self.keep_aspect_ratio = keep_aspect_ratio
+
+        self.transform = torch.nn.Sequential(
+            K.augmentation.Normalize(mean=mean,std=std)
+        )
+    
+    def preprocess_cv2_embed(self, img_cv2):
+        w, h = self.size
+        img_resize = cv2.resize(img_cv2, (w,h), interpolation=cv2.INTER_LINEAR)
+        
+        x = torch.from_numpy(np.array(img_resize))
+        img_resize = self.transform(x).squeeze(0)
+        return img_resize 
 
     def preprocess_timm_embed(self, img_pil):
         """ normalize tensor
@@ -399,3 +413,124 @@ class Transform_To_Models():
         # img_tensor = img_tensor.type(torch.float32)
         # res = (img_tensor - self.mean[:, None, None]) / self.std[:, None, None]
         # return res
+
+STATS_CHANNELS = {
+    "Blue": (0.199, 0.087),
+    "Red": (0.188, 0.098),
+    "Green": (0.216, 0.108),
+    "RGB": ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    "NIR": (0.395, 0.157),
+    "RE": (0.306, 0.141)
+}
+
+class Multispectral_Transforms():
+    """
+    Class with transformation methods
+    """
+    def __init__(self, 
+        size = 224, 
+        force_resize:bool = False, 
+        mean = None, std=None, bands_to_apply=None) -> None:
+        """ Normalization method, also, resize img if necessary.
+        """
+        #self.mean = 255 * torch.tensor([0.485, 0.456, 0.406])
+        #self.std = 255 * torch.tensor([0.229, 0.224, 0.225])
+        self.size = (size, size)
+        self.force_resize = force_resize
+
+        self.mean, self.std = self.concatenate_mean_std(bands_to_apply=bands_to_apply, stats_channels=STATS_CHANNELS)
+        self.transform = torch.nn.Sequential(
+            K.augmentation.Normalize(mean=self.mean, std=self.std)
+        )
+    
+    def concatenate_mean_std(self, bands_to_apply=None, stats_channels=None):
+        if stats_channels is None and bands_to_apply is None:
+            return None, None 
+        else:
+            means = []
+            stds  = []
+            for band in bands_to_apply:
+                if band == "RGB":
+                    means = means + stats_channels[band][0]
+                    stds = stds + stats_channels[band][1]
+                else:
+                    means.append(stats_channels[band][0])
+                    stds.append(stats_channels[band][1])
+            return means, stds 
+    
+    def preprocess_torch_multispectral(self, img_torch):
+        #if isinstance(img_torch, np.ndarray):
+
+        img_torch = img_torch.permute(2, 0, 1)  # From (H, W, C) to (C, H, W)
+        # Create a transform to resize the tensor
+        resize = transforms.Resize(self.size)
+        img_torch = resize(img_torch).to(torch.float)
+        print("Img torch shape ----------------------------:", img_torch.shape)
+        # Add a batch dimension, required by the transform
+        #img_torch = img_torch#.unsqueeze(0)  # From (C, H, W) to (1, C, H, W)
+        # Define the mean and std for normalization
+        # Create a transform to normalize the tensor
+        normalize_transform = transforms.Normalize(mean=self.mean, std=self.std)
+        # Apply the normalization transform
+        normalized_tensor = normalize_transform(img_torch)
+        # If needed, convert back to (H, W, C)
+        #normalized_tensor = normalized_tensor.permute(1, 2, 0)  # From (C, H, W) to (H, W, C)
+        final_tensor = normalized_tensor.unsqueeze(0)
+        print("++++++++++++++ final_tensor: ", final_tensor)
+        return final_tensor
+
+
+    def preprocess_cv2_embed(self, img_cv2):
+        w, h = self.size
+        print("------------- img_cv2: ", img_cv2)
+        img_resize = cv2.resize(img_cv2, (w,h), interpolation=cv2.INTER_LINEAR)
+        
+        x = torch.from_numpy(np.array(img_resize))
+        img_resize = self.transform(x).squeeze(0)
+        return img_resize 
+
+    def preprocess_timm_embed(self, img_pil):
+        """ normalize tensor
+        """
+        # resize to min size IF NECESSARY
+        w,h = img_pil.size
+        h_new = w_new = 0.
+        if (w < self.size or h < self.size) or self.force_resize:
+            if w < h:
+                h_new = (h * self.size) // w
+                w_new = self.size
+            else:
+                w_new = (w * self.size) // h
+                h_new = self.size
+            if self.keep_aspect_ratio:
+                img_pil = img_pil.resize((w_new,h_new))
+            else:
+                img_pil = img_pil.resize((self.size,self.size))
+        
+        x = torch.from_numpy(np.array(img_pil))
+        x = x.type(torch.float32)
+        x = x.permute(-1, 0, 1)
+        x = (x - self.mean[:, None, None]) / self.std[:, None, None]
+
+        return x
+
+    def preprocess_sam_embed(self, img_pil):
+        """ normalize tensor
+        """
+        # resize to min size IF NECESSARY
+        w,h = img_pil.size
+        h_new = w_new = 0.
+        if (w < self.size or h < self.size) or self.force_resize:
+            if w < h:
+                h_new = (h * self.size) // w
+                w_new = self.size
+            else:
+                w_new = (w * self.size) // h
+                h_new = self.size
+            if self.keep_aspect_ratio:
+                img_pil = img_pil.resize((w_new,h_new))
+            else:
+                img_pil = img_pil.resize((self.size,self.size))
+        
+        x = np.array(img_pil)
+        return x
