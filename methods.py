@@ -62,7 +62,7 @@ def few_shot(args, is_single_class=None, output_root=None, fewshot_method=None, 
     feature_extractor = DOFAFeatureExtractor(
         checkpoint=None, #args.checkpoint, 
         model_size="base",
-        wave_list= get_wavelengths(args.bands.split(","), WAVELENGHTS) #["RGB", "NIR"]
+        wave_list= get_wavelengths(args.bands.split(","), WAVELENGHTS), device=args.device #["RGB", "NIR"]
     )
 
     if fewshot_method == MainMethod.FEWSHOT_1_CLASS:

@@ -4,7 +4,7 @@ from torch import nn
 from .models.models_dwv import vit_base_patch16, vit_large_patch16
 
 class DOFAFeatureExtractor(nn.Module):
-    def __init__(self, model_size:str="base", checkpoint:str=None, wave_list=None):
+    def __init__(self, model_size:str="base", checkpoint:str=None, wave_list=None, device="cpu"):
         super(DOFAFeatureExtractor,self).__init__()
         self.input_size = (224, 224)
         self.wave_list = wave_list
@@ -18,6 +18,7 @@ class DOFAFeatureExtractor(nn.Module):
         if checkpoint != None:
             check_point = torch.load(checkpoint)
             self.vit_model.load_state_dict(check_point, strict=False)
+            self.vit_model = self.vit_model.to(device)
 
     def forward(self, x):
         return self.vit_model.forward(x, wave_list=self.wave_list)
