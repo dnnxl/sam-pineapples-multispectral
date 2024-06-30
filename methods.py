@@ -41,6 +41,14 @@ def few_shot(args, is_single_class=None, output_root=None, fewshot_method=None, 
     # STEP 1: create data loaders
     # the loaders will load the images in numpy arrays
     labeled_loader, test_loader, _, _, validation_loader = create_datasets_and_loaders(args)
+
+    #for images, labels, additional in test_loader:
+        # Here images is a batch of images and labels is the corresponding labels
+        #print(images.shape)  # Output: torch.Size([64, 1, 28, 28]) if batch_size=64
+    #    print(additional)
+    #    print("+++++++++++++++++++++++++")
+    
+
     if not os.path.exists(output_root):
         os.makedirs(output_root)
     # save gt

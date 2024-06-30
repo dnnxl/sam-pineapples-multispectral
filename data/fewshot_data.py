@@ -34,7 +34,7 @@ def get_batch_prototypes(
         for idx in list(range(batch[1]['img_idx'].numel())):
             #print("---: ", batch[0][idx].shape)
             #print("---: ", batch[1][idx])
-            print("---: ", batch[2][idx])
+            #print("---: ", batch[2][idx])
 
             # get background samples
             if get_background_samples:
@@ -90,14 +90,14 @@ def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
         #print("/////////////////////////", bbox[0])
         x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
         crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
-        print("----- crop size: ", crop.size)
+        #print("----- foreground crop size: ", crop.shape)
 
         if use_sam_embeddings:
             new_sample = transform_norm.preprocess_torch_multispectral(crop)
         else:
             #new_sample = transform_norm.preprocess_timm_embed(crop)
             new_sample = transform_norm.preprocess_torch_multispectral(crop)
-            print("----- new_sample size: ", new_sample.size)
+            #print("----- new_sample size: ", new_sample.size)
         labels.append(classes[idx_bbox].item())
         imgs.append(new_sample)
     return imgs, labels

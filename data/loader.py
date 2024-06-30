@@ -38,14 +38,13 @@ class DetectionFastCollate:
         labeler_outputs = dict()
         img_tensor = torch.zeros((batch_size, *batch[0][0].shape), dtype=torch.uint8)
         img_multispectral_tensor = torch.zeros((batch_size, *batch[0][2].shape), dtype=torch.float32)
-
         for i in range(batch_size):
             if type(batch[i][0]).__module__ == np.__name__:
                 img_tensor[i] += torch.from_numpy(batch[i][0])
                 img_multispectral_tensor[i] += torch.from_numpy(batch[i][2])
             else:
                 img_tensor[i] += batch[i][0]
-                img_multispectral_tensor[i] += batch[i][2]
+                img_multispectral_tensor[i] += torch.from_numpy(batch[i][2])
 
             labeler_inputs = {}
             for tk, tv in batch[i][1].items():

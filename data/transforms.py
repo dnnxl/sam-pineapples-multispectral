@@ -465,7 +465,7 @@ class Multispectral_Transforms():
         # Create a transform to resize the tensor
         resize = transforms.Resize(self.size)
         img_torch = resize(img_torch).to(torch.float)
-        print("Img torch shape ----------------------------:", img_torch.shape)
+        #print("Img torch shape ----------------------------:", img_torch.shape)
         # Add a batch dimension, required by the transform
         #img_torch = img_torch#.unsqueeze(0)  # From (C, H, W) to (1, C, H, W)
         # Define the mean and std for normalization
@@ -476,13 +476,13 @@ class Multispectral_Transforms():
         # If needed, convert back to (H, W, C)
         #normalized_tensor = normalized_tensor.permute(1, 2, 0)  # From (C, H, W) to (H, W, C)
         final_tensor = normalized_tensor.unsqueeze(0)
-        print("++++++++++++++ final_tensor: ", final_tensor)
+        #print("++++++++++++++ final_tensor: ", final_tensor)
         return final_tensor
 
 
     def preprocess_cv2_embed(self, img_cv2):
         w, h = self.size
-        print("------------- img_cv2: ", img_cv2)
+        #print("------------- img_cv2: ", img_cv2)
         img_resize = cv2.resize(img_cv2, (w,h), interpolation=cv2.INTER_LINEAR)
         
         x = torch.from_numpy(np.array(img_resize))

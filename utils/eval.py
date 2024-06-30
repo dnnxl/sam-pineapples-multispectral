@@ -66,10 +66,17 @@ def save_inferences_singleclass(
     unlabeled_imgs = []
 
     # collect all inferences from SAM
+    #for images, labels, additional in unlabeled_loader:
+        # Here images is a batch of images and labels is the corresponding labels
+    #    print(images.shape)  # Output: torch.Size([64, 1, 28, 28]) if batch_size=64
+    #    print(additional)
+    #    print("+++++++++++++++++++++++++")
+        
     for (_, batch) in tqdm(enumerate(unlabeled_loader), total= len(unlabeled_loader)):
 
         # every batch is a tuple: (torch.imgs , metadata_and_bboxes)
         # ITERATE: IMAGE
+        #print("---------- batch[1]['img_idx'].numel(): ", batch[1]['img_idx'])
         for idx in list(range(batch[1]['img_idx'].numel())):
             # get foreground samples (from sam predictions)
             imgs_s, box_coords, scores = sam_model.get_unlabeled_samples(
@@ -96,7 +103,7 @@ def save_inferences_singleclass(
         if  distance <= upper and distance >= lower:
             image_result = {
                 'image_id': imgs_ids[idx_],
-                'category_id': 1,
+                'category_id': 0,
                 'score': imgs_scores[idx_],
                 'bbox': imgs_box_coords[idx_],
             }

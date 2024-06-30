@@ -69,6 +69,11 @@ class FASTSAM:
         # batch[0] has the images    
         img = batch[0][idx].cpu().numpy().transpose(1,2,0)
         img_pil = Image.fromarray(img)
+        #print(batch)
+        #print(batch[2])
+        #print(batch[2][idx])
+
+        img_multispectral = batch[2][idx]#.numpy()
 
         # run fastsam to create proposals to create segment everything
         # conf=0.1 sets the minimum confidence threshold for object detection
@@ -84,8 +89,7 @@ class FASTSAM:
             xywh = torchvision.ops.box_convert(
                     torch.tensor(xyxy), in_fmt='xyxy', out_fmt='xywh')
             
-            img_multispectral = batch[2][idx]#.numpy()
-            x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+            x1, y1, x2, y2 = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
             crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
 
             #crop = img_pil.crop(xyxy)  

@@ -9,6 +9,7 @@ class DOFAFeatureExtractor(nn.Module):
         self.input_size = (224, 224)
         self.wave_list = wave_list
         self.is_transformer = False
+        self.device = device
 
         if model_size == "base":
             self.vit_model = vit_base_patch16()
@@ -21,7 +22,10 @@ class DOFAFeatureExtractor(nn.Module):
             self.vit_model = self.vit_model.to(device)
 
     def forward(self, x):
+        x = x.to(self.device)
         return self.vit_model.forward(x, wave_list=self.wave_list)
 
     def forward_features(self, x):
+        x = x.to(self.device)
+
         return self.vit_model.forward_features(x, wave_list=self.wave_list)

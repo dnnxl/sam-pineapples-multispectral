@@ -102,9 +102,10 @@ def create_dataset_ood(name, root, splits=('train'),
                 # get all image ids 
                 ids = [item['id'] for item in new_labeled['images']]
                 total_samples = labeled_samples + unlabeled_samples + validation_samples
+                #print("/*- total_samples: ", total_samples)
                 assert total_samples <= len(ids), "size mismatch"
 
-                # get ids
+                # filenames
                 root_ids = f"./seeds/{str(root).split('/')[-1]}/seed{seed}_{labeled_samples}_{unlabeled_samples}_{validation_samples}"
                 ids_labeled = f"{root_ids}/labeled.txt"
                 ids_test = f"{root_ids}/test.txt"

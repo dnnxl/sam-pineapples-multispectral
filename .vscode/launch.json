@@ -25,12 +25,12 @@
                 "--dataset", "coco2017",
                 "--batch-size","4",
                 "--batch-size-val", "1",
-                "--batch-size-labeled","10",
-                "--batch-size-unlabeled", "10",
+                "--batch-size-labeled","2",
+                "--batch-size-unlabeled", "100",
                 "--batch-size-validation", "1",
 
-                "--ood-labeled-samples", "1",
-                "--ood-unlabeled-samples", "1",
+                "--ood-labeled-samples", "2",
+                "--ood-unlabeled-samples", "100",
                 "--ood-validation-samples", "1",
 
                 "--aug-method","rand_augmentation",
@@ -56,7 +56,7 @@
                 "--beta", "0", // 0, 1, 2
 
                 // Multispectral bands
-                "--bands", "RGB,NIR"
+                "--bands", "RGB,RE"
             ]
         }
     ]

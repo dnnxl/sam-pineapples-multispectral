@@ -246,9 +246,12 @@ def create_datasets_and_loaders(args):
     dataset_unlabel = datasets[2]
     dataset_full_label = datasets[3]
     dataset_validation = datasets[4]
+
+
+
     
-    #for idx in range(len(dataset_label)):
-    #    image, label, additional_info = dataset_label[idx]
+    #for idx in range(len(dataset_test)):
+    #    image, label, additional_info = dataset_test[idx]
     #    print("Image:", image)
     #    print("Label:", label)
     #    print("Additional Info:", additional_info)
@@ -272,6 +275,12 @@ def create_datasets_and_loaders(args):
         #transform_fn = trans_numpy,
         normalize_img=normalize_imgs
     )
+    #print("hhhhhhhhhhhhhhhhhhhhhheerrreeeeeee")
+    #for sample, label, addi in loader_label:
+        # Perform operations on each sample and label
+    #    print(addi)  # Example operation: print the label
+        # Add your custom processing or training logic here
+
     loader_unlabel = create_loader(
         dataset_unlabel,
         img_resolution=args.img_resolution,

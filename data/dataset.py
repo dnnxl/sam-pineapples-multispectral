@@ -24,7 +24,7 @@ class DetectionDatset(data.Dataset):
         super(DetectionDatset, self).__init__()
         parser_kwargs = parser_kwargs or {}
         self.data_dir = data_dir
-        print("Detection dataset data dir", data_dir)
+        #print("Detection dataset data dir", data_dir)
         if isinstance(parser, str):
             self._parser = create_parser(parser, **parser_kwargs)
         else:
@@ -54,7 +54,7 @@ class DetectionDatset(data.Dataset):
         # Multispectral image combination
         im_stacked = None
 
-        print("Entering multispectral image")
+        #print("Entering multispectral image")
         if self.bands is not None:
             # stack the channels
             file_rgb = str(self.data_dir / img_info['file_name'])
@@ -63,7 +63,7 @@ class DetectionDatset(data.Dataset):
                 root_dir = os.path.dirname(file_rgb)
                 imgName = Path(file_rgb).stem
                 for band_name in self.bands:
-                    print("Band_to_Apply: ", band_name)
+                    #print("Band_to_Apply: ", band_name)
                     if band_name == 'RGB' or band_name == 'RGB'.lower():
                         im_rgb = cv2.cvtColor(cv2.imread(file_rgb), cv2.COLOR_BGR2RGB)/255
                         bands.append(im_rgb)

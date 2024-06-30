@@ -92,7 +92,7 @@ class PrototypicalNetworks(FewShot):
         
         # get feature maps from the images
         for img in imgs_1:
-            print("/*-*/*--* img shape: ", img.shape)
+            #print("/*-*/*--* img shape: ", img.shape)
             if self.use_sam_embeddings:
                 t_temp = self.get_embeddings_sam(img)
             else:
@@ -155,9 +155,10 @@ class PrototypicalNetworks(FewShot):
             #z_query = self.get_embeddings_timm(query_image)
             z_query = self.get_dofa_embedding(query_image)
 
-        print("self.prototype: ----------------------------", self.prototypes.shape)
+        #print("self.prototype: ----------------------------", self.prototypes.shape)
         # Compute the euclidean distance from queries to prototypes
         dist = torch.cdist(z_query, self.prototypes)
+        #print("- Distance: ", dist)
 
         # Use it to compute classification scores
         # FEW SHOT ALWAYS LOOK FOR THE MAX, AND SINCE DISTANCES ARE ALWAYS 
