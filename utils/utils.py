@@ -39,7 +39,10 @@ def get_parameters():
     add_bool_arg(parser, 'load-pretrained', default=False) 
     # add_bool_arg(parser, 'use-sam-embeddings', default=False) 
     parser.add_argument('--use-sam-embeddings', type=int, default=0)
-    parser.add_argument('--timm-model', type=str, default="")  
+    parser.add_argument('--timm-model', type=str, default="none")  
+    parser.add_argument('--feature-extractor', type=str, default="dofa")  # dofa-large
+    parser.add_argument('--dofa-model', type=str, default="large")  # dofa-large
+
     parser.add_argument('--loss', type=str, default="mse")  
     parser.add_argument('--optim', type=str, default="sgd")
     parser.add_argument('--val-freq', type=int, default=1)

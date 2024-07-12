@@ -430,15 +430,17 @@ class Multispectral_Transforms():
     def __init__(self, 
         size = 224, 
         force_resize:bool = False, 
-        mean = None, std=None, bands_to_apply=None) -> None:
+        mean = None, std=None, bands_to_apply=None, keep_aspect_ratio:bool = False) -> None:
         """ Normalization method, also, resize img if necessary.
         """
         #self.mean = 255 * torch.tensor([0.485, 0.456, 0.406])
         #self.std = 255 * torch.tensor([0.229, 0.224, 0.225])
-        self.size = (size, size)
+        self.size = size
         self.force_resize = force_resize
-
-        self.mean, self.std = self.concatenate_mean_std(bands_to_apply=bands_to_apply, stats_channels=STATS_CHANNELS)
+        self.keep_aspect_ratio = keep_aspect_ratio
+        self.bands_to_apply = bands_to_apply
+        self.mean = 255 * torch.tensor([0.485, 0.456, 0.406])
+        self.std = 255 * torch.tensor([0.229, 0.224, 0.225])
         self.transform = torch.nn.Sequential(
             K.augmentation.Normalize(mean=self.mean, std=self.std)
         )
@@ -470,6 +472,8 @@ class Multispectral_Transforms():
         #img_torch = img_torch#.unsqueeze(0)  # From (C, H, W) to (1, C, H, W)
         # Define the mean and std for normalization
         # Create a transform to normalize the tensor
+        self.mean, self.std = self.concatenate_mean_std(bands_to_apply=self.bands_to_apply, stats_channels=STATS_CHANNELS)
+
         normalize_transform = transforms.Normalize(mean=self.mean, std=self.std)
         # Apply the normalization transform
         normalized_tensor = normalize_transform(img_torch)

@@ -56,7 +56,7 @@ def save_inferences_singleclass(
         fs_model, unlabeled_loader,
         sam_model, filepath,
         trans_norm,
-        use_sam_embeddings, val=False
+        use_sam_embeddings, val=False, multispectral=False
     ):
     fs_model.backbone.use_fc = False
     
@@ -80,7 +80,7 @@ def save_inferences_singleclass(
         for idx in list(range(batch[1]['img_idx'].numel())):
             # get foreground samples (from sam predictions)
             imgs_s, box_coords, scores = sam_model.get_unlabeled_samples(
-                batch, idx, trans_norm, use_sam_embeddings
+                batch, idx, trans_norm, use_sam_embeddings, multispectral=multispectral
             )
             # accumulate SAM info (inferences)
             unlabeled_imgs += imgs_s

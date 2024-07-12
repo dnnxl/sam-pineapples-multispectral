@@ -15,6 +15,15 @@ class MainMethod:
     FEWSHOT_2_CLASSES_PTMAP = 'fewshotPTMap'
     SELECTIVE_SEARCH = 'ss'
 
+class FeatureExtractor:
+    TIMM_MODEL = "timm"
+    DOFA_MODEL = "dofa"
+
+class DOFAModel:
+    LARGE = "large"
+    BASE = "base"
+    NONE = "none" # no training
+
 class SamMethod:
     SAM = 'sam'
     MOBILE_SAM = 'mobilesam'

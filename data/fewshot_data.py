@@ -14,7 +14,7 @@ def get_batch_prototypes(
     num_classes:float=None, 
     get_background_samples:bool=True,
     trans_norm=None,
-    use_sam_embeddings=False):
+    use_sam_embeddings=False, multispectral=False):
     """ Get the images that will be used to calculate the prototypes.
 
     Params:
@@ -41,12 +41,12 @@ def get_batch_prototypes(
                 ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
                 imgs_b, labels_b = get_background(
                     batch, idx, trans_norm, ss, num_classes,
-                    use_sam_embeddings=use_sam_embeddings
+                    use_sam_embeddings=use_sam_embeddings, multispectral=multispectral
                 )
             # get foreground samples
             imgs_f, labels_f = get_foreground(
                 batch, idx, trans_norm,
-                use_sam_embeddings=use_sam_embeddings
+                use_sam_embeddings=use_sam_embeddings, multispectral=multispectral
             )
 
             # accumulate
@@ -59,7 +59,7 @@ def get_batch_prototypes(
             count_imgs += 1
     return imgs, labels
 
-def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
+def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False, multispectral=False):
     """ From a batch and its index get samples """
     imgs = []
     labels = []
@@ -88,15 +88,28 @@ def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
         # Crop image from pytorch tensor
         #print("bbox--------------", bbox)
         #print("/////////////////////////", bbox[0])
-        x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
-        crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
+        #x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+        #crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
         #print("----- foreground crop size: ", crop.shape)
-
-        if use_sam_embeddings:
-            new_sample = transform_norm.preprocess_torch_multispectral(crop)
+        
+        if not multispectral:
+            crop = img_pil.crop(bbox)  
         else:
-            #new_sample = transform_norm.preprocess_timm_embed(crop)
+            x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+            crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
+
+        if not multispectral:
+            new_sample = transform_norm.preprocess_timm_embed(crop)
+        else:
             new_sample = transform_norm.preprocess_torch_multispectral(crop)
+
+
+
+        #if use_sam_embeddings:
+        #    new_sample = transform_norm.preprocess_torch_multispectral(crop)
+        #else:
+            #new_sample = transform_norm.preprocess_timm_embed(crop)
+        #    new_sample = transform_norm.preprocess_torch_multispectral(crop)
             #print("----- new_sample size: ", new_sample.size)
         labels.append(classes[idx_bbox].item())
         imgs.append(new_sample)
@@ -104,7 +117,7 @@ def get_foreground(batch, idx, transform_norm, use_sam_embeddings=False):
 
 def get_background(
     batch, idx, transform_norm, selective_search, 
-    num_classes, use_sam_embeddings=False):
+    num_classes, use_sam_embeddings=False, multispectral=False):
     """ From a batch and its index get samples """
     imgs = []
     labels = []
@@ -201,15 +214,20 @@ def get_background(
         labels += labels_temp
         image = batch[0][idx].cpu().numpy().transpose(1,2,0)
         
+        img_multispectral = batch[2][idx]
+
         img_pil = Image.fromarray(image)
         for (x1,y1,x2,y2) in coords:
-            crop = img_pil.crop([x1,y1,x2,y2])  
-            if use_sam_embeddings:
-                new_sample = transform_norm.preprocess_sam_embed(crop)
-            #else:
-            #    new_sample = transform_norm.preprocess_timm_embed(crop)
+            if not multispectral:
+                crop = img_pil.crop([x1,y1,x2,y2])  
             else:
-                new_sample = transform_norm.preprocess_cv2_embed(crop)
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
+
+            if not multispectral:
+                new_sample = transform_norm.preprocess_timm_embed(crop)
+            else:
+                new_sample = transform_norm.preprocess_torch_multispectral(crop)
             imgs.append(new_sample)
     return imgs, labels
 

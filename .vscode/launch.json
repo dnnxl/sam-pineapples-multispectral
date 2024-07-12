@@ -16,7 +16,6 @@
                 "--root", "./pineapples_multispectral/",// "../../../share/semi_supervised/pineapples/PINEAPPLES2_5mts_nosplits",//""/content/drive/MyDrive/Agro-Pineapples/pineapples_5m_multispectral"", 
                 "--num-classes","0",
                 "--load-pretrained",
-                "--timm-model", "xcit_nano_12_p8_224.fb_dist_in1k", //swinv2_base_window8_256.ms_in1k tf_efficientnet_l2.ns_jft_in1k_475 vit_base_patch16_clip_224.openai_ft_in1k
                 "--loss","mae",
                 "--optim", "sgd",
                 "--val-freq", "1",
@@ -39,24 +38,29 @@
                 "--numa","-1",
                 "--output-folder","PINEAPPLES2_5mts_nosplits",
                 "--run-name","temp",
-                "--seed","50",
+                "--seed","8",
 
                 "--sam-model","h",
                 "--ood-thresh", "0.8",
                 "--ood-histogram-bins", "15", //
                 "--use-sam-embeddings", "0",
-                "--method", "fewshot1", // ss samAlone fewshot1 fewshot2 fewshotOOD fewshotRelationalNetwork fewshotMatching fewshotMahalanobis 
+                "--method", "fewshotMahalanobis", // ss samAlone fewshot1 fewshot2 fewshotOOD fewshotRelationalNetwork fewshotMatching fewshotMahalanobis 
                 "--device", "cpu", // cuda, cpu
                 "--sam-proposal", "fastsam", // sam, fastsam, mobilesam, edgesam
 
                 // PARAMETERS FOR MAHALANOBIS 
                 "--dim-red", "svd", // svd, pca
-                "--n-components", "8", // 2, 4, 8, 16, 32
+                "--n-components", "16", // 2, 4, 8, 16, 32
                 "--mahalanobis", "regularization", // normal, regularization
                 "--beta", "0", // 0, 1, 2
+                "--mahalanobis-lambda", "1", 
 
                 // Multispectral bands
-                "--bands", "RGB,RE"
+                "--bands", "RGB", 
+                "--feature-extractor", "dofa", // dofa timm
+                "--dofa-model", "none", // base large 
+                "--timm-model", "xcit_nano_12_p8_224.fb_dist_in1k", //swinv2_base_window8_256.ms_in1k tf_efficientnet_l2.ns_jft_in1k_475 vit_base_patch16_clip_224.openai_ft_in1k
+
             ]
         }
     ]

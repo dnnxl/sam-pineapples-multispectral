@@ -23,7 +23,7 @@ class PrototypicalNetworks(FewShot):
     classification scores for query images based on their euclidean distance to the prototypes.
     """
 
-    def __init__(self, is_single_class, use_sam_embeddings, device="cpu", *args, **kwargs):
+    def __init__(self, is_single_class, use_sam_embeddings, multispectral=False, device="cpu", *args, **kwargs):
         """
         Raises:
             ValueError: if the backbone is not a feature extractor,
@@ -36,6 +36,7 @@ class PrototypicalNetworks(FewShot):
         self.num_samples = None
         self.is_single_class = is_single_class
         self.use_sam_embeddings = use_sam_embeddings
+        self.multispectral = multispectral
 
     def get_embeddings_timm(self, img):
         """
@@ -61,7 +62,7 @@ class PrototypicalNetworks(FewShot):
     def process_support_set(
         self,
         support_images: List,
-        support_labels: List = None,
+        support_labels: List = None, multispectral=False
     ):
         """
         Overrides process_support_set of FewShotClassifier.
@@ -95,8 +96,9 @@ class PrototypicalNetworks(FewShot):
             #print("/*-*/*--* img shape: ", img.shape)
             if self.use_sam_embeddings:
                 t_temp = self.get_embeddings_sam(img)
+            elif not self.multispectral:
+                t_temp = self.get_embeddings_timm(img)
             else:
-                #t_temp = self.get_embeddings_timm(img)
                 t_temp = self.get_dofa_embedding(img)
             support_features.append(t_temp.squeeze().cpu())
         
@@ -151,8 +153,9 @@ class PrototypicalNetworks(FewShot):
         """
         if self.use_sam_embeddings:
             z_query = self.get_embeddings_sam(query_image)
+        elif not self.multispectral:
+            z_query = self.get_embeddings_timm(query_image)
         else:
-            #z_query = self.get_embeddings_timm(query_image)
             z_query = self.get_dofa_embedding(query_image)
 
         #print("self.prototype: ----------------------------", self.prototypes.shape)

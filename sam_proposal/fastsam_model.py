@@ -56,7 +56,7 @@ class FASTSAM:
             self.mask_generator_embeddings = mask_generator_embeddings
 
     def get_unlabeled_samples(self, 
-            batch, idx, transform, use_sam_embeddings
+            batch, idx, transform, use_sam_embeddings, multispectral=False
         ):
         """ From a batch and its index get samples 
         Params
@@ -89,15 +89,13 @@ class FASTSAM:
             xywh = torchvision.ops.box_convert(
                     torch.tensor(xyxy), in_fmt='xyxy', out_fmt='xywh')
             
-            x1, y1, x2, y2 = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
-            crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
-
-            #crop = img_pil.crop(xyxy)  
-            if use_sam_embeddings:
-                sample = transform.preprocess_sam_embed(crop)
-            else:
-                #sample = transform.preprocess_timm_embed(crop)
+            if multispectral:
+                x1, y1, x2, y2 = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
+                crop = img_multispectral[y1:y2, x1:x2, :] # The tensor is H W C 
                 sample = transform.preprocess_torch_multispectral(crop)
+            else:
+                crop = img_pil.crop(xyxy)  
+                sample = transform.preprocess_timm_embed(crop)
 
             # accumulate
             imgs.append(sample)
